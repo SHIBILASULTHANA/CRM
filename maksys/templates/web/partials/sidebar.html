@@ -1,0 +1,88 @@
+{% load static %}
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <div class="sidebar-brand-wrapper pl-3 d-none d-lg-flex align-items-center justify-content-start fixed-top">
+      <a class="sidebar-brand brand-logo" href="index.html"><b class="text-success">MAKSYS</b></a> 
+    </div>
+    <ul class="nav">
+    {% if user.is_authenticated %}
+        {% if user.is_superuser %}
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'web:admin_dashboard' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-speedometer"></i>
+                </span>
+                <span class="menu-title">Overview</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'web:department_list' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-chart-bar"></i>
+                </span>
+                <span class="menu-title">Departments</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'web:employee_list' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-laptop"></i>
+                </span>
+                <span class="menu-title">Employees</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'web:client_list' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Clients</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'attendance:admin_attendance' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Attendance</span>
+                </a>
+            </li>
+        {% elif user.usertype == 'Employee' %} 
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'web:employee_dashboard' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Overview</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'attendance:employee_attendance' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'attendance:mark_attendance' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Mark Attendance</span>
+                </a>
+            </li>
+        {% elif user.usertype == 'Client' %}
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{% url 'web:client_dashboard' %}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">Overview</span>
+                </a>
+            </li>
+        {% endif %}
+    {% else %}
+        <p>User is not authenticated.</p> 
+    {% endif %}  
+    </ul>
+</nav>

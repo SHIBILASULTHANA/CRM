@@ -1,0 +1,186 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="row">
+            <div class="form-row align-items-center p-3">
+                <div class="col-auto">
+                    <label class="col-form-label" for="department">Department:</label>
+                </div>
+                <div class="col-auto">
+                    <div class="form-control">{{ logged_in_employee_department }}</div>
+                </div>
+            </div>
+            <div class="form-row align-items-center p-3">
+                <div class="col-auto">
+                    <label class="col-form-label" for="employee">Employee:</label>
+                </div>
+                <div class="col-auto">
+                    <div class="form-control">{{ logged_in_employee_name }}</div>
+                </div>
+            </div>
+            <div class="form-row align-items-center p-3">
+                <div class="col-auto">
+                    <label class="col-form-label" for="month">Month:</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-control" id="month">
+                        <option value="">Select Month</option>
+                        {% for month in months %}
+                            <option value="{{ month.0 }}">{{ month.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row align-items-center p-3">
+                <div class="col-auto">
+                    <label class="col-form-label" for="year">Year:</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-control" id="year">
+                        <option value="">Select Year</option>
+                        {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row align-items-center p-3">
+                <div class="col-auto">
+                    <label for="late_attendance">Late Attendance:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="checkbox" id="late_attendance" name="late_attendance">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 grid-margin stretch-card mt-5">
+            <div class="card">
+                <div class="card-body">
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title">Attendance Sheet</h4>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <colgroup>
+                                    <!-- Column for Employee -->
+                                    <col style="border-right: 1px solid #000;">
+                                    <!-- Columns for each day of the month -->
+                                    <!-- Adjust colspan based on the number of days in the month -->
+                                    <col span="30" style="border-right: 1px solid #000;">
+                                    <!-- Column for Total -->
+                                    <col>
+                                </colgroup>
+                                <tr>
+                                    <!-- Header for Employee -->
+                                    <th>Employee</th>
+                                    <!-- Headers for each day of the month -->
+                                    <!-- Dynamically generated -->
+                                    <!-- Adjust to include all days of the month -->
+                                    <!-- Loop through days of the month to generate -->
+                                    {% for day in days_of_month %}
+                                    <th>{{ day }}</th>
+                                    {% endfor %}
+                                    <!-- Header for Total -->
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Row for employee data -->
+                                <tr>
+                                    <!-- Employee name -->
+                                    <td>{{ logged_in_employee_name }}</td>
+                                    <!-- Attendance data for each day in the month -->
+                                    <!-- Dynamically generated -->
+                                    <!-- Adjust based on the number of days in the month -->
+                                    <!-- Loop through attendance data for each day -->
+                                    {% for past_attendance_status in past_attendance %}
+                                    <td>{{ past_attendance_status }}</td>
+                                    {% endfor %}
+                                    <!-- Attendance data for future days in the month -->
+                                    <!-- Dynamically generated -->
+                                    <!-- Loop through future_attendance for future days -->
+                                    {% for future_attendance_status in future_attendance %}
+                                    <td>{{ future_attendance_status }}</td>
+                                    {% endfor %}
+                                    <!-- Total number of days -->
+                                    <!-- Display the total number of days -->
+                                    <td>{{ total_days }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% comment %} <script>
+    $(document).ready(function() {
+        
+        // Function to update the current time every second
+        function updateTime() {
+            var currentTimeElement = document.getElementById('current-time');
+            var currentTime = new Date();
+            var hours = currentTime.getHours();
+            var minutes = currentTime.getMinutes();
+            var seconds = currentTime.getSeconds();
+            // Add leading zeros if necessary
+            hours = (hours < 10 ? "0" : "") + hours;
+            minutes = (minutes < 10 ? "0" : "") + minutes;
+            seconds = (seconds < 10 ? "0" : "") + seconds;
+            // Format the time as HH:MM:SS
+            var formattedTime = hours + ":" + minutes + ":" + seconds;
+            // Update the content of the current time element
+            currentTimeElement.textContent = formattedTime;
+        }
+
+        // Call updateTime every second to keep the time updated
+        setInterval(updateTime, 1000);
+
+        // Call updateTime once on page load to initially display the time
+        updateTime();
+
+        // Clock In/Out button click event for both buttons
+        $('#clockInDropdown').on('click', function() {
+            var action = $(this).text().trim();
+            // Synchronize the behavior of both buttons
+            if (action === 'Clock In') {
+                $('#clock-button, #clockInDropdown').text('Clock In');
+                // Display current details
+                $('#current-time').text(new Date().toLocaleTimeString());
+                // Update button text
+                $('#clock-button').on('click', function() {
+                    $('#clockInDropdown, #clock-button').text('Clock Out');
+                });
+            } else {
+                // Display current details
+                $('#current-time').text(new Date().toLocaleTimeString());
+                // Update button text
+                $('#clock-button').on('click', function() {
+                    $('#clockInDropdown, #clockbutton').text('Clock In');
+                });
+            }
+        });
+
+        // Cancel button click event
+        $('#cancel-button').on('click', function() {
+            // Reset button text
+            $('#clockInDropdown').dropdown('toggle');
+        });
+
+        
+        
+    });
+
+</script>
+ {% endcomment %}
+

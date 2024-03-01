@@ -1,0 +1,157 @@
+{% extends "web/base.html" %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title">Mark Your Attendance</h4>
+                        <div class="dropdown" style="width: 20%;">
+                            {% if clocked_in %}
+                                <button type="button" class="btn btn-danger btn-sm" id="clock-out-button">Clock Out</button>
+                            {% else %}
+                                <button type="button" class="btn btn-success btn-sm" id="clock-in-button">Clock In</button>
+                            {% endif %}
+                            <!-- Add current time element -->
+                            <p class="mb-3">Current Time: <span id="current-time"></span></p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Date</th>
+                                    <th>Clock In</th>
+                                    <th>Clock Out</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table">
+                                {% for record in all_records %}
+                                    <tr>
+                                        <td>{{ record.employee_id }}</td>
+                                        <td>{{ record.date }}</td>
+                                        <td>{{ record.clock_in }}</td>
+                                        <td>{% if record.clock_out %}{{ record.clock_out }}{% else %}None{% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% csrf_token %} <!-- Include CSRF token -->
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function updateTime() {
+            var currentTimeElement = document.getElementById('current-time');
+            var currentTime = new Date();
+            var hours = currentTime.getHours();
+            var minutes = currentTime.getMinutes();
+            var seconds = currentTime.getSeconds();
+            hours = (hours < 10 ? "0" : "") + hours;
+            minutes = (minutes < 10 ? "0" : "") + minutes;
+            seconds = (seconds < 10 ? "0" : "") + seconds;
+            var formattedTime = hours + ":" + minutes + ":" + seconds;
+            currentTimeElement.textContent = formattedTime;
+        }
+        setInterval(updateTime, 1000);
+    
+        $(document).on('click', '#clock-in-button', function(event) {
+            event.preventDefault();
+            var button = $(this);
+            var currentTime = $('#current-time').text();
+            var csrftoken = getCookie('csrftoken');
+            $.ajax({
+                type: 'POST',
+                url: '{% url "attendance:mark_attendance" %}',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    action: 'clock_in',
+                    time: currentTime
+                },
+                success: function(response) {
+                    button.text('Clock Out');
+                    button.attr('id', 'clock-out-button');
+                    button.removeClass('btn-success').addClass('btn-danger');
+                    updateTable(response);
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log(errmsg);
+                }
+            });
+        });
+    
+        $(document).on('click', '#clock-out-button', function(event) {
+            event.preventDefault();
+            var button = $(this);
+            var currentTime = $('#current-time').text();
+            var csrftoken = getCookie('csrftoken');
+            $.ajax({
+                type: 'POST',
+                url: '{% url "attendance:mark_attendance" %}',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    action: 'clock_out',
+                    time: currentTime
+                },
+                success: function(response) {
+                    button.text('Clocked Out');
+                    button.attr('disabled', 'disabled');
+                    updateTable(response);
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log(errmsg);
+                }
+            });
+        });
+    
+        function updateTable(response) {
+            if (response.success) {
+                var tableBody = '';
+                // Iterate over each record and construct table rows
+                response.records.forEach(function(record) {
+                    tableBody += '<tr>';
+                    tableBody += '<td>' + record.employee_id + '</td>';
+                    tableBody += '<td>' + record.date + '</td>';
+                    tableBody += '<td>' + record.clock_in + '</td>';
+                    tableBody += '<td>' + (record.clock_out ? record.clock_out : 'None') + '</td>';
+                    tableBody += '</tr>';
+                });
+                // Update the table body with the constructed rows
+                $('#attendance-table tbody').html(tableBody);
+            }
+        }
+    
+        
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+    
+</script>
+
+
+{% endblock %}

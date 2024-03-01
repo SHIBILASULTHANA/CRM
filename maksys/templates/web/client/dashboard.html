@@ -1,0 +1,29 @@
+{% extends "web/base.html" %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2>Client Profile</h2>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ client.client_name }}</h5>
+                    <p class="card-text">Email: {{ client.email }}</p>
+                    <p class="card-text">Country: {{ client.country }}</p>
+                    <p class="card-text">Mobile: {{ client.mobile }}</p>
+                    <hr>
+                    <h5 class="card-title">Company Details</h5>
+                    <p class="card-text">Company Name: {{ client.company_name }}</p>
+                    <p class="card-text">Office Phone Number: {{ client.office_phone_number }}</p>
+                    <p class="card-text">Official Website Count: {{ client.official_website_count }}</p>
+                    <p class="card-text">GST/VAT Number: {{ client.gst_vat_number }}</p>
+                    <p class="card-text">City: {{ client.city }}</p>
+                    <p class="card-text">State: {{ client.state }}</p>
+                    <p class="card-text">Postal Code: {{ client.postal_code }}</p>
+                    <p class="card-text">Company Address: {{ client.company_address }}</p>
+                    <!-- Add more company details as needed -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

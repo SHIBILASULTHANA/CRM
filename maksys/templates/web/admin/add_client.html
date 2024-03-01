@@ -1,0 +1,29 @@
+{% extends 'web/base.html' %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        {% if client.id %}
+                            <h4 class="card-title">Edit Client: {{ client.client_name }}</h4>
+                        {% else %}
+                            <h4 class="card-title">Add New Client</h4>
+                        {% endif %}
+                    </div>
+                    <div class="container">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <a href="{% url 'web:client_list' %}" class="btn btn-secondary">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="row">
+            <form method="get" id="apply-filters-form"  class="row">
+                <div class="form-row align-items-center p-3">
+                    <div class="col-auto">
+                        <label class="col-form-label" for="department">Department:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-control" id="department" name="department">
+                            <option value="" {% if not selected_department_id %}selected{% endif %}>All</option>
+                            {% for department in departments %}
+                                <option value="{{ department.id }}" {% if selected_department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>              
+                <div class="form-row align-items-center p-3">
+                    <div class="col-auto">
+                        <label class="col-form-label" for="employee">Employee:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-control" id="employee" name="employee">
+                            <option value="">All</option>
+                            {% for employee in employees %}
+                            <option value="{{ employee.id }}" {% if selected_employee_id == employee.id %}selected{% endif %}>{{ employee.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>                
+                <div class="form-row align-items-center p-3">
+                    <div class="col-auto">
+                        <label class="col-form-label" for="month">Month:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-control" id="month" name="month">
+                            <option value="">Select Month</option>
+                            {% for month in months %}
+                                <option value="{{ month.0 }}" {% if month.0 == selected_month %}selected{% endif %}>{{ month.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row align-items-center p-3">
+                    <div class="col-auto">
+                        <label class="col-form-label" for="year">Year:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-control" id="year" name="year">
+                            <option value="">Select Year</option>
+                            {% for year in years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>                
+                <div class="form-row align-items-center p-3">
+                    <div class="col-auto">
+                        <label for="late_attendance">Late Attendance:</label>
+                    </div>
+                    <div class="col-auto">
+                        <input type="checkbox" id="late_attendance" name="late_attendance">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary ml-3 ">Apply Filters</button>
+            </form>
+        </div>
+        <div class="col-md-12 grid-margin stretch-card mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title">Attendance Sheet</h4>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <!-- Headers for each day of the month -->
+                                    <!-- Dynamically generated -->
+                                    <!-- Adjust to include all days of the month -->
+                                    <!-- Loop through days of the month to generate -->
+                                    
+                                    {% for day in days_of_month %}
+                                    <th>{{ day }}</th>
+                                    {% endfor %}
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee_id, data in attendance_data.items %}
+                                <tr>
+                                    <td>{{ data.name }}</td>
+                                    {% for past_attendance_status in data.past_attendance %}
+                                    <td>{{ past_attendance_status }}</td>
+                                    {% endfor %}
+                                    {% for future_attendance_status in data.future_attendance %}
+                                    <td>{{ future_attendance_status }}</td>
+                                    {% endfor %}
+                                    <!-- Total number of days -->
+                                    <!-- Display the total number of days -->
+                                    <td>{{ days_of_month|length }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // JavaScript to handle form submission
+        document.getElementById('apply-filters-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            // Get selected values from dropdowns
+            var departmentId = document.getElementById('department').value;
+            var employeeId = document.getElementById('employee').value;
+            var month = document.getElementById('month').value;
+            var year = document.getElementById('year').value;
+
+            // Construct the URL based on selected values
+            var url = "{% url 'attendance:admin_attendance' %}?";
+            if (departmentId) url += "department=" + departmentId + "&";
+            if (employeeId) url += "employee=" + employeeId + "&";
+            if (month) url += "month=" + month + "&";
+            if (year) url += "year=" + year;
+
+            // Redirect to the constructed URL
+            window.location.href = url;
+        });
+
+        // Retrieve selected values from URL parameters and set them in the dropdowns
+        var urlParams = new URLSearchParams(window.location.search);
+        var selectedDepartmentId = urlParams.get('department');
+        var selectedEmployeeId = urlParams.get('employee');
+        var selectedMonth = urlParams.get('month');
+        var selectedYear = urlParams.get('year');
+
+        document.getElementById('department').value = selectedDepartmentId;
+        document.getElementById('employee').value = selectedEmployeeId;
+        document.getElementById('month').value = selectedMonth;
+        document.getElementById('year').value = selectedYear;
+
+        // JavaScript to handle department change
+        document.getElementById('department').addEventListener('change', function() {
+            var departmentId = this.value;
+            var employeeId = document.getElementById('employee').value;
+            var month = document.getElementById('month').value;
+            var year = document.getElementById('year').value;
+            var url = "{% url 'attendance:admin_attendance' %}?department=" + departmentId;
+            if (employeeId) url += "&employee=" + employeeId;
+            if (month) url += "&month=" + month;
+            if (year) url += "&year=" + year;
+            window.location.href = url;
+        });
+    });
+</script>
+
+
+
+
+{% endblock %}

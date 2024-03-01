@@ -1,0 +1,18 @@
+{% extends "web/base.html" %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+<div class="container">
+    <h2>Employee Profile</h2>
+    <div>
+        <p><strong>Name:</strong> {{ employee.name }}</p>
+        <p><strong>Email:</strong> {{ employee.email }}</p>
+        <p><strong>Position:</strong> {{ employee.department }}</p>
+        <p><strong>Date of Birth:</strong> {{ employee.date_of_birth }}</p>
+        <p><strong>Mobile:</strong> {{ employee.mobile }}</p>
+        <!-- Add more employee details as needed -->
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

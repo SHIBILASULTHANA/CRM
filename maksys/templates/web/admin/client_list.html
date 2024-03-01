@@ -1,0 +1,222 @@
+{% extends "web/base.html" %}
+{% load static %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title">Client Information</h4>
+                        <!-- Add New Employee Button -->
+                        <a href="{% url 'web:add_client' %}" class="btn btn-success d-flex align-items-center">+ New Client</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Client ID</th>
+                                    <th>Client Name</th>
+                                    <th>Email</th>
+                                    <th>Mobile</th>
+                                    <th>Company Name</th>
+                                    <th>Office No</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in clients %}
+                                <tr>
+                                    <td>{{ client.id }}</td>
+                                    <td>{{ client.get_salutation_display }}{{ client.client_name }}</td>
+                                    <td>{{ client.email }}</td>
+                                    <td>{{ client.mobile }}</td>
+                                    <td>{{ client.company_name }}</td>
+                                    <td>{{ client.office_phone_number }}</td>
+                                    <td>
+                                        {% if client.id %}
+                                        <a href="{% url 'web:edit_client' client.id %}" class="btn btn-primary">Edit</a>
+                                        <a href="{% url 'web:delete_client' client.id %}" class="btn btn-danger">Delete</a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="#" id="headerDropdownLink{{ client.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">:</a>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ client.id }}" style="max-height: 400px; overflow-y: auto;">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <form class="form-sample" method="post">
+                                                        {% csrf_token %} 
+                                                        <p class="card-description">Account Details</p>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Client ID</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="CLTID0{{ client.id }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Profile Photo</label>
+                                                                    <div class="col-sm-9">
+                                                                    {% if client.profile_picture %}
+                                                                        <img src="{{ MEDIA_URL }}{{ client.profile_picture.url }}" alt="Profile Picture">
+                                                                    {% else %}
+                                                                        <p>No profile picture available</p>
+                                                                    {% endif %}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Client Name</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{client.salutation}}{{ client.client_name }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Email</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{client.email}}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Country</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{client.country}}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Mobile</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{client.country}}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Category</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{client.client_category}}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-check-flat form-check-primary">
+                                                                    <label class="form-check-label">
+                                                                      <input type="checkbox" class="form-check-input"> Can user login to app? <i class="input-helper"></i></label>
+                                                                </div>
+                                                                <div class="form-check form-check-flat form-check-primary">
+                                                                    <label class="form-check-label">
+                                                                        <input type="checkbox" class="form-check-input"> Can receive email notifications? <i class="input-helper"></i></label>
+                                                                </div>
+                                                            </div>
+                                                        </div>    <br>                                                    
+                                                        <p class="card-description">Company Details</p>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Company Name</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.company_name }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Office Phone Number</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.office_phone_number }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Official Website</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.official_website_count }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">GST/VAT Number</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.gst_vat_number }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Company Name</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.company_name }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">City</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.city }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">State</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.state }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Postal Code</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.postal_code }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group row">
+                                                                    <label class="col-sm-4 col-form-label">Company Address</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" class="form-control text-dark" value="{{ client.company_address }}" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                                                                         
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        {% for client in clients %}
+        $("#headerDropdownLink{{ client.id }}").click(function(){
+            $("#dropdownMenuLink{{ client.id }}").toggle();
+          });
+        {% endfor %}
+    });
+</script>
+{% endblock %}

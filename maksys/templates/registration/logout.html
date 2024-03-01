@@ -1,0 +1,13 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Logged out" %}{% endblock %}
+
+{% block content %}
+<p>{% trans "Successfully logged out" %}.
+
+<div class="btn bg-primary align-items-center justify-content-start">
+    <a class="sidebar-brand brand-logo" href="{% url 'auth_login' %}"><b class="text-success">Login again</b></a>
+</div> 
+</p>
+{% endblock %}

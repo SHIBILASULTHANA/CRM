@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Corona Admin</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="{% static 'web/assets/vendors/mdi/css/materialdesignicons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/assets/vendors/css/vendor.bundle.base.css' %}">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <link rel="stylesheet" href="{% static 'web/assets/vendors/jvectormap/jquery-jvectormap.css' %}">
+    <link rel="stylesheet" href="{% static 'web/assets/vendors/flag-icon-css/css/flag-icon.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/assets/vendors/owl-carousel-2/owl.carousel.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/assets/vendors/owl-carousel-2/owl.theme.default.min.css' %}">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="{% static 'web/assets/css/style.css' %}">
+    {% comment %} <link rel="stylesheet" href="{% static 'web/assets/css/style1.css' %}"> {% endcomment %}
+    <!-- End layout styles -->
+    <link rel="shortcut icon" href="{% static 'web/assets/images/favicon.png' %}" />
+    <!-- Add FullCalendar resources -->
+    {% comment %} <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.7.2/main.min.css' rel='stylesheet' /> {% endcomment %}
+    {% comment %} <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.7.2/main.min.js'></script> {% endcomment %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+
+  </head>
+  <body>
+    <div class="container-scroller">
+      <!-- partial:partials/_sidebar.html -->     
+        {% include "web/partials/sidebar.html" %}
+      <!-- partial -->
+      <div class="container-fluid page-body-wrapper">
+        <!-- partial:partials/_navbar.html -->
+        {% include "web/partials/header.html" %}
+        <!-- partial -->
+        <div class="main-panel">
+          {% block content %}
+          {% endblock %}
+          <!-- partial:partials/_footer.html -->
+          {% include "web/partials/footer.html" %}
+          <!-- partial -->
+        </div>
+        <!-- main-panel ends -->
+      </div>
+      <!-- page-body-wrapper ends -->
+    </div>
+    <!-- container-scroller -->
+    <!-- plugins:js -->
+    <script src="{% static 'web/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    
+    <script src="{% static 'web/assets/vendors/chart.js/Chart.min.js' %}"></script>
+    <script src="{% static 'web/assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+    <script src="{% static 'web/assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+    <script src="{% static 'web/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+    <script src="{% static 'web/assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="{% static 'web/assets/js/off-canvas.js' %}"></script>
+    <script src="{% static 'web/assets/js/hoverable-collapse.js' %}"></script>
+    <script src="{% static 'web/assets/js/misc.js' %}"></script>
+    <script src="{% static 'web/assets/js/settings.js' %}"></script>
+    <script src="{% static 'web/assets/js/todolist.js' %}"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page -->
+    <script src="{% static 'web/assets/js/dashboard.js' %}"></script>
+    <!-- End custom js for this page -->
+  </body>
+</html>
