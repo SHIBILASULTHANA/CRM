@@ -1,0 +1,55 @@
+{% extends "web/base.html" %}
+{% load static %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div>
+                        <form method="post" class="complaint-form">
+                            <div class="d-flex justify-content-center align-items-center pb-3">
+                                <h4 class="card-title">Register a Complaint</h4>
+                            </div>
+                            {% csrf_token %}
+                            <div class="form-group row">
+                                <label for="id_complaint_name">Complaint Name:</label>
+                                {{ form.complaint_name }}
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-lg-6 col-md-6">
+                                    <label for="id_start_date">Start Date:</label>
+                                    {{ form.start_date }}
+                                </div>
+                                <div class="form-group col-lg-6 col-md-6">
+                                    <label for="id_category">Category:</label>
+                                    {{ form.category }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-lg-6 col-md-6">
+                                    <label for="id_brand">Brand:</label>
+                                    {{ form.brand }}
+                                </div>
+                                <div class="form-group col-lg-6 col-md-6">
+                                    <label for="id_serial_no">Serial No:</label>
+                                    {{ form.serial_no }}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="id_client">Client:</label>
+                                {{ form.client }}
+                            </div>
+                            <div class="form-group row">
+                                <label for="id_summary">Summary:</label>
+                                {{ form.summary }}
+                            </div>
+                            <button type="submit">Register</button>
+                        </form>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

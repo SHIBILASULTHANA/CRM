@@ -1,35 +1,54 @@
-.flex-grid-table {
-    display: grid;
+/* Styles for the complaint form */
+.complaint-form {
+    max-width: 100vh;
+    margin: auto;
+    padding: 3%;
+    border: 1px solid #aab2bd;
+    border-radius: 5px;
+}
+
+.complaint-form .form-group {
+    margin-bottom: 20px;
+    color: #aab2bd;
+}
+
+.complaint-form label {
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="date"],
+select,
+textarea {
     width: 100%;
-    border-collapse: collapse;
-}
-
-.flex-grid-table colgroup,
-.flex-grid-table thead,
-.flex-grid-table tbody {
-    display: contents;
-}
-
-.flex-grid-table thead {
-    grid-template-columns: auto repeat(29, 1fr) auto;
-    border-bottom: 2px solid #000;
-}
-
-.flex-grid-table th {
     padding: 10px;
-    text-align: left;
-    background-color: #f2f2f2;
+    border: 1px solid #aab2bd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
 }
 
-.flex-grid-table td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+.complaint-form button[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
 }
 
-.flex-grid-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
+.complaint-form button[type="submit"]:hover {
+    background-color: #0056b3;
 }
 
-.flex-grid-table tbody tr:hover {
-    background-color: #ddd;
+.popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 5; /* Ensure the popup is above other elements */
 }

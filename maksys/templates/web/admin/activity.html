@@ -1,0 +1,132 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <button id="create-board-toggle" type="button" class="btn btn-outline-primary">Create Board +</button>
+        <div id="create-board-form" style="display: none;" class="pl-5">
+            <form method="post" action="{% url 'activity:create_board' %}">
+                {% csrf_token %}
+                <label for="id_name">Board Name:</label>
+                <input type="text" id="id_name" name="name">
+                <button type="submit" class="mt-1 btn-success">Create Board</button>
+            </form>
+        </div>
+    </div>
+    <div class="row mt-3">
+        {% for board in boards %}
+        <div class="col-md-3">
+            <button class="board-btn btn btn-outline-info" data-board-id="{{ board.id }}">{{ board.name }}</button>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="board-content" class="col-md-12 grid-margin stretch-card" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <!-- List and card creation forms -->
+                <div id="list-and-card-forms">
+                    <!-- Create List Form -->
+                    <form id="create-list-form" method="post" action="{% url 'activity:create_list' %}" class="form-inline">
+                        {% csrf_token %}
+                        <!-- Ensure board_id is properly set as an integer -->
+                        <div class="input-group">
+                            <input type="hidden" id="board-id-input" name="board_id" value="">
+                            <input type="text" name="list_name" placeholder="Add a List">
+                            <button type="submit">Add</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Display existing lists and cards for the selected board -->
+                <ul id="board-items" class="row"></ul>
+                    
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Define a JavaScript variable to hold the board data
+const boards = {{ boards_json|safe }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const createBoardToggle = document.getElementById('create-board-toggle');
+    const createBoardForm = document.getElementById('create-board-form');
+    const boardContent = document.getElementById('board-content');
+    const createListForm = document.getElementById('create-list-form');
+    const boardItems = document.getElementById('board-items');
+    const boardIdInput = document.getElementById('board-id-input');
+
+    createBoardToggle.addEventListener('click', function() {
+        createBoardForm.style.display = createBoardForm.style.display === 'none' ? 'block' : 'none';
+        boardContent.style.display = 'none'; // Hide board content when toggling create board form
+    });
+
+    document.querySelectorAll('.board-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const boardId = button.getAttribute('data-board-id');
+            const selectedBoard = findBoardById(boardId);
+            populateBoardItems(selectedBoard);
+            boardContent.style.display = 'block'; // Show board content when a board button is clicked
+        });
+    });
+
+    function findBoardById(boardId) {
+        // Iterate through the list of boards to find the board with the specified ID
+        for (let i = 0; i < boards.length; i++) {
+            if (boards[i].id == boardId) {
+                return boards[i];
+            }
+        }
+        // If no board is found with the specified ID, return null or handle the error accordingly
+        return null;
+    }
+
+    function populateBoardItems(selectedBoard) {
+        boardItems.innerHTML = ''; // Clear existing content
+        boardIdInput.value = selectedBoard.id; // Set the board ID in the form
+        if (selectedBoard && selectedBoard.lists) {
+            selectedBoard.lists.forEach(list => {
+                const listElement = document.createElement('div');
+                listElement.classList.add('card', 'm-3', 'col-lg-3');
+                listElement.innerHTML = `
+                    <div>
+                        <h3>${list.name}</h3>
+                    </div>
+                `;
+                const cardList = document.createElement('ul');
+    
+                // Display existing cards within the list
+                if (list.cards) {
+                    console.log('Existing cards:', list.cards); // Log existing cards for debugging
+                    list.cards.forEach(card => {
+                        console.log('Card:', card); // Log each card for debugging
+                        const cardElement = document.createElement('li');
+                        cardElement.innerHTML = `<h4 class="card-title">${card.title}</h4><div class="media">${card.description}</div>`;
+                        cardList.appendChild(cardElement);
+                    });
+                } else {
+                    console.log('No cards found for this list'); // Log a message if no cards are found
+                }
+                listElement.appendChild(cardList);
+                boardItems.appendChild(listElement);
+                
+                // Add card creation form for each list
+                const createCardForm = document.createElement('form');
+                createCardForm.method = 'post';
+                createCardForm.action = '{% url "activity:create_card" %}';
+                createCardForm.innerHTML = `
+                    {% csrf_token %}
+                    <input type="hidden" name="list_id" value="${list.id}">
+                    <input type="text" name="title" placeholder="Title">
+                    <textarea name="description" placeholder="Description"></textarea>
+                    <button type="submit">Add Card</button>
+                `;
+                cardList.appendChild(createCardForm);
+            });
+        }
+    }
+    
+});
+</script>
+{% endblock %}

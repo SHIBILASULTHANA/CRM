@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render,redirect
 from django.views.generic import TemplateView,View,FormView,UpdateView
 from web.models import Department, Employee
-from .models import ClockRecord,AttendanceSettings
+from .models import ClockRecord,AttendanceSettings,AttendanceRecord
 import calendar,datetime
 from django.utils import timezone 
 from datetime import datetime
@@ -70,13 +70,14 @@ class AdminAttendanceView(TemplateView):
         attendance_data = {}
         for employee in employees:
             # Fetch past and future attendance for each employee
-            past_attendance, future_attendance = self.get_employee_attendance(employee, selected_month, selected_year)
+            past_attendance, future_attendance, late_attendance = self.get_employee_attendance(employee, selected_month, selected_year)
             
             # Store attendance data in the dictionary using employee ID as key
             attendance_data[employee.id] = {
                 'name': employee.name,
                 'past_attendance': past_attendance,
-                'future_attendance': future_attendance
+                'future_attendance': future_attendance,
+                'late_attendance': late_attendance
             }
 
         return attendance_data
@@ -87,18 +88,28 @@ class AdminAttendanceView(TemplateView):
 
         past_attendance = []
         future_attendance = []
+        late_attendance = []  # Initialize list for late attendance status
 
         for i in range(1, days_in_month + 1):
             day = datetime(selected_year, selected_month, i).date()
             if day <= timezone.now().date():
                 if ClockRecord.objects.filter(employee=employee, date=day).exists():
                     past_attendance.append('✅')
+                    if ClockRecord.objects.filter(employee=employee, date=day, action='clock_in').exists():
+                        late_time_threshold = AttendanceSettings.objects.first().late_time
+                        clock_in_time = ClockRecord.objects.get(employee=employee, date=day, action='clock_in').clock_in
+                        if clock_in_time > late_time_threshold:
+                            late_attendance.append('Late')
+                        else:
+                            late_attendance.append('')
                 else:
                     past_attendance.append('❌')
+                    
             else:
                 future_attendance.append('0')
-        
-        return past_attendance, future_attendance
+
+        return past_attendance, future_attendance, late_attendance  # Return three values
+
 
 
 
@@ -179,13 +190,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 latest_record = None
                 clocked_in = False
             all_records = ClockRecord.objects.filter(employee=request.user.employee).order_by('-date', '-id')
-            
-            if request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-                # Serialize records
-                serialized_records = [{'employee_id': record.employee_id, 'date': record.date, 'clock_in': record.clock_in, 'clock_out': record.clock_out} for record in all_records]
-                return JsonResponse({'latest_record': latest_record, 'all_records': serialized_records, 'clocked_in': clocked_in})
-            else:
-                return render(request, self.template_name, {'latest_record': latest_record, 'all_records': all_records, 'clocked_in': clocked_in})
+            return render(request, self.template_name, {'latest_record': latest_record, 'all_records': all_records, 'clocked_in': clocked_in})
         else:
             return redirect('some_other_page')
 
@@ -195,26 +200,60 @@ class MarkAttendanceView(LoginRequiredMixin, View):
         
         if request.user.usertype == 'Employee':
             action = request.POST.get('action')
-            if action in ['clock_in', 'clock_out']:
-                clock_record, created = ClockRecord.objects.get_or_create(
-                    employee=request.user.employee,
-                    date=current_time.date(),
-                    defaults={'clock_in': current_time}
-                )
-                if not created and action == 'clock_out' and not clock_record.clock_out:
-                    clock_record.clock_out = current_time
-                    clock_record.save()
-            
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                # Fetch updated records
-                updated_records = ClockRecord.objects.filter(employee=request.user.employee).order_by('-date', '-id')
-                # Serialize records
-                serialized_records = [{'employee_id': record.employee_id, 'date': record.date, 'clock_in': record.clock_in, 'clock_out': record.clock_out} for record in updated_records]
-                return JsonResponse({'success': True, 'records': serialized_records})
+
+            attendance_settings = AttendanceSettings.objects.first()
+            if attendance_settings:
+                office_time = attendance_settings.office_time
+                late_time = attendance_settings.late_time
+                end_time = attendance_settings.end_time
+                
+                if office_time <= current_time.time() <= end_time:
+                    if action == 'clock_in':
+                        is_late = current_time.time() > late_time
+                    else:
+                        is_late = False
+                    
+                    clock_record, created = ClockRecord.objects.get_or_create(
+                        employee=request.user.employee,
+                        date=current_time.date(),
+                        defaults={'clock_in': current_time} if action == 'clock_in' else {'clock_out': current_time}
+                    )
+                    
+                    if not created and action == 'clock_out' and not clock_record.clock_out:
+                        clock_record.clock_out = current_time
+                        clock_record.save()
+                    
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        # Fetch updated records
+                        updated_records = ClockRecord.objects.filter(employee=request.user.employee).order_by('-date', '-id')
+                        # Serialize records with late attendance status
+                        serialized_records = []
+                        for record in updated_records:
+                            late_attendance = 'Punctual'
+                            if action == 'clock_in' and record.clock_in and record.clock_in > attendance_settings.late_time:
+                                late_attendance = 'Late'
+                            
+                            serialized_record = {
+                                'date': record.date,
+                                'clock_in': record.clock_in,
+                                'clock_out': record.clock_out,
+                                'late_attendance': late_attendance
+                            }
+                            serialized_records.append(serialized_record)
+                        
+                        return JsonResponse({'success': True, 'records': serialized_records})
+
+                else:
+                    # Handle case where current time is outside office hours
+                    pass
             else:
-                return redirect(reverse('attendance:mark_attendance'))
-        else:
-            return redirect('some_other_page')
+                # Handle case where attendance settings are not available
+                pass
+        
+        # Redirect to some other page if not an Employee or if attendance settings are not available
+        return redirect('some_other_page')
+
+
         
 class AttendanceSettingsView(View):
     template_name = 'web/admin/settings/attendance.html'
@@ -246,3 +285,22 @@ class AttendanceSettingsEditView(UpdateView):
     def get_object(self):
         # Assuming there's only one AttendanceSettings object
         return AttendanceSettings.objects.first()
+    
+class GetAttendanceDataView(View):
+    def get(self, request, *args, **kwargs):
+        # Retrieve attendance data from the database
+        attendance_records = AttendanceRecord.objects.all()
+        
+        # Serialize the data into a format suitable for JSON response
+        serialized_data = []
+        for record in attendance_records:
+            serialized_record = {
+                'date': record.date,
+                'clock_in': record.clock_in,
+                'clock_out': record.clock_out,
+                'late_attendance': record.late_attendance,
+            }
+            serialized_data.append(serialized_record)
+        
+        # Return the serialized data as JSON response
+        return JsonResponse({'success': True, 'records': serialized_data})

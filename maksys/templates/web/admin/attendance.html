@@ -85,7 +85,7 @@
                                     <!-- Loop through days of the month to generate -->
                                     
                                     {% for day in days_of_month %}
-                                    <th>{{ day }}</th>
+                                    <th>{{ day }}</th>                                   
                                     {% endfor %}
                                     <th>Total</th>
                                 </tr>
@@ -96,6 +96,9 @@
                                     <td>{{ data.name }}</td>
                                     {% for past_attendance_status in data.past_attendance %}
                                     <td>{{ past_attendance_status }}</td>
+                                    {% endfor %}
+                                    {% for late_attendance_status in data.late_attendance %}
+                                    <td class="late-attendance">{{ late_attendance_status }}</td>
                                     {% endfor %}
                                     {% for future_attendance_status in data.future_attendance %}
                                     <td>{{ future_attendance_status }}</td>
@@ -118,36 +121,31 @@
     document.addEventListener('DOMContentLoaded', function() {
         // JavaScript to handle form submission
         document.getElementById('apply-filters-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
-            
             // Get selected values from dropdowns
             var departmentId = document.getElementById('department').value;
             var employeeId = document.getElementById('employee').value;
             var month = document.getElementById('month').value;
             var year = document.getElementById('year').value;
+            var lateAttendanceCheckbox = document.getElementById('late_attendance');
+            var isChecked = lateAttendanceCheckbox.checked; // Preserve the checkbox state
 
-            // Construct the URL based on selected values
+            // Update late attendance symbols before form submission
+            updateLateAttendanceSymbols(isChecked);
+
+            // Construct the URL based on selected values and checkbox state
             var url = "{% url 'attendance:admin_attendance' %}?";
             if (departmentId) url += "department=" + departmentId + "&";
             if (employeeId) url += "employee=" + employeeId + "&";
             if (month) url += "month=" + month + "&";
-            if (year) url += "year=" + year;
+            if (year) url += "year=" + year + "&";
+            url += "late_attendance=" + isChecked; // Include checkbox state in URL
 
             // Redirect to the constructed URL
             window.location.href = url;
+
+            // Prevent default form submission
+            event.preventDefault();
         });
-
-        // Retrieve selected values from URL parameters and set them in the dropdowns
-        var urlParams = new URLSearchParams(window.location.search);
-        var selectedDepartmentId = urlParams.get('department');
-        var selectedEmployeeId = urlParams.get('employee');
-        var selectedMonth = urlParams.get('month');
-        var selectedYear = urlParams.get('year');
-
-        document.getElementById('department').value = selectedDepartmentId;
-        document.getElementById('employee').value = selectedEmployeeId;
-        document.getElementById('month').value = selectedMonth;
-        document.getElementById('year').value = selectedYear;
 
         // JavaScript to handle department change
         document.getElementById('department').addEventListener('change', function() {
@@ -161,8 +159,44 @@
             if (year) url += "&year=" + year;
             window.location.href = url;
         });
+
+        // JavaScript to handle checkbox change
+        document.getElementById('late_attendance').addEventListener('change', function() {
+            var isChecked = this.checked;
+            updateLateAttendanceSymbols(isChecked);
+        });
+
+        // Function to update late attendance symbols
+        function updateLateAttendanceSymbols(isChecked) {
+            var lateCells = document.querySelectorAll('.late-attendance');
+            lateCells.forEach(function(cell) {
+                if (isChecked) {
+                    if (cell.innerText === '✅') {
+                        cell.innerText = '☑️'; // Show late attendance symbol if checkbox is checked
+                    }
+                } else {
+                    cell.innerText = '✅'; // Show regular attendance symbol if checkbox is not checked
+                }
+            });
+        }
+
+        // Retrieve selected values from URL parameters and set them in the dropdowns
+        var urlParams = new URLSearchParams(window.location.search);
+        var selectedDepartmentId = urlParams.get('department');
+        var selectedEmployeeId = urlParams.get('employee');
+        var selectedMonth = urlParams.get('month');
+        var selectedYear = urlParams.get('year');
+        var isChecked = urlParams.get('late_attendance') === 'true'; // Parse checkbox state from URL parameter
+
+        document.getElementById('department').value = selectedDepartmentId;
+        document.getElementById('employee').value = selectedEmployeeId;
+        document.getElementById('month').value = selectedMonth;
+        document.getElementById('year').value = selectedYear;
+        document.getElementById('late_attendance').checked = isChecked; // Set checkbox state
+        updateLateAttendanceSymbols(isChecked); // Update late attendance symbols based on checkbox state
     });
 </script>
+
 
 
 

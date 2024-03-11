@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'web',
     'registration',
     'attendance',
+    'complaint',
+    'activity',
 ]
 
 MIDDLEWARE = [

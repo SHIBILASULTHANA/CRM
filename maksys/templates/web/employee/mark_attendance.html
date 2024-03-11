@@ -21,19 +21,20 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Employee ID</th>
+                                    <!-- <th>Employee ID</th> -->
                                     <th>Date</th>
                                     <th>Clock In</th>
                                     <th>Clock Out</th>
+                                    <th>Late Attendance</th>
                                 </tr>
                             </thead>
                             <tbody id="attendance-table">
                                 {% for record in all_records %}
                                     <tr>
-                                        <td>{{ record.employee_id }}</td>
                                         <td>{{ record.date }}</td>
                                         <td>{{ record.clock_in }}</td>
                                         <td>{% if record.clock_out %}{{ record.clock_out }}{% else %}None{% endif %}</td>
+                                        <td>{{ record.late_attendance }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -45,7 +46,7 @@
     </div>
 </div>
 
-{% csrf_token %} <!-- Include CSRF token -->
+{% csrf_token %} 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -63,78 +64,129 @@
             currentTimeElement.textContent = formattedTime;
         }
         setInterval(updateTime, 1000);
-    
+
+        // Trigger AJAX request to fetch attendance data on page load
+        updateAttendanceTable();
+
+        var officeTime = "{{ attendance_settings.office_time|default:'09:30' }}";
+        var lateTime = "{{ attendance_settings.late_time|default:'09:40' }}";
+        var endTime = "{{ attendance_settings.end_time|default:'18:00' }}";
+        
+        function isOfficeHours(currentTime) {
+            var currentHour = currentTime.getHours();
+            var currentMinute = currentTime.getMinutes();
+            var officeHour = parseInt(officeTime.split(':')[0]);
+            var officeMinute = parseInt(officeTime.split(':')[1]);
+            var lateHour = parseInt(lateTime.split(':')[0]);
+            var lateMinute = parseInt(lateTime.split(':')[1]);
+            var endHour = parseInt(endTime.split(':')[0]);
+            var endMinute = parseInt(endTime.split(':')[1]);
+            
+            var officeTimeStart = new Date(currentTime);
+            officeTimeStart.setHours(officeHour);
+            officeTimeStart.setMinutes(officeMinute);
+            
+            var lateTimeStart = new Date(currentTime);
+            lateTimeStart.setHours(lateHour);
+            lateTimeStart.setMinutes(lateMinute);
+            
+            var officeTimeEnd = new Date(currentTime);
+            officeTimeEnd.setHours(endHour);
+            officeTimeEnd.setMinutes(endMinute);
+            
+            return currentTime >= officeTimeStart && currentTime <= officeTimeEnd;
+        }
+        
         $(document).on('click', '#clock-in-button', function(event) {
             event.preventDefault();
-            var button = $(this);
-            var currentTime = $('#current-time').text();
-            var csrftoken = getCookie('csrftoken');
-            $.ajax({
-                type: 'POST',
-                url: '{% url "attendance:mark_attendance" %}',
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                data: {
-                    action: 'clock_in',
-                    time: currentTime
-                },
-                success: function(response) {
-                    button.text('Clock Out');
-                    button.attr('id', 'clock-out-button');
-                    button.removeClass('btn-success').addClass('btn-danger');
-                    updateTable(response);
-                },
-                error: function(xhr, errmsg, err) {
-                    console.log(errmsg);
-                }
-            });
+            var currentTime = new Date();
+            if (isOfficeHours(currentTime)) {
+                var button = $(this);
+                var csrftoken = getCookie('csrftoken');
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "attendance:mark_attendance" %}',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {
+                        action: 'clock_in',
+                        time: currentTime.toLocaleTimeString()
+                    },
+                    success: function(response) {
+                        button.text('Clock Out');
+                        button.attr('id', 'clock-out-button');
+                        button.removeClass('btn-success').addClass('btn-danger');
+                        updateAttendanceTable(); // Update attendance table after clock-in
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log(errmsg);
+                    }
+                });
+            } else {
+                alert("You can only clock in during office hours.");
+            }
         });
-    
+        
         $(document).on('click', '#clock-out-button', function(event) {
             event.preventDefault();
-            var button = $(this);
-            var currentTime = $('#current-time').text();
+            var currentTime = new Date();
+            if (isOfficeHours(currentTime)) {
+                var button = $(this);
+                var csrftoken = getCookie('csrftoken');
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "attendance:mark_attendance" %}',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {
+                        action: 'clock_out',
+                        time: currentTime.toLocaleTimeString()
+                    },
+                    success: function(response) {
+                        button.text('Clocked Out');
+                        button.attr('disabled', 'disabled');
+                        updateAttendanceTable(); // Update attendance table after clock-out
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log(errmsg);
+                    }
+                });
+            } else {
+                alert("You can only clock out during office hours.");
+            }
+        });
+
+        // JavaScript function to update the attendance table
+        function updateAttendanceTable() {
             var csrftoken = getCookie('csrftoken');
             $.ajax({
-                type: 'POST',
+                type: 'GET',
                 url: '{% url "attendance:mark_attendance" %}',
                 headers: {
                     'X-CSRFToken': csrftoken
                 },
-                data: {
-                    action: 'clock_out',
-                    time: currentTime
-                },
                 success: function(response) {
-                    button.text('Clocked Out');
-                    button.attr('disabled', 'disabled');
-                    updateTable(response);
+                    if (response.success) {
+                        var tableBody = '';
+                        response.records.forEach(function(record) {
+                            tableBody += '<tr>';
+                            tableBody += '<td>' + record.date + '</td>';
+                            tableBody += '<td>' + record.clock_in + '</td>';
+                            tableBody += '<td>' + (record.clock_out ? record.clock_out : 'None') + '</td>';
+                            tableBody += '<td>' + record.late_attendance + '</td>';
+                            tableBody += '</tr>';
+                        });
+                        $('#attendance-table').html(tableBody);
+                    }
                 },
                 error: function(xhr, errmsg, err) {
                     console.log(errmsg);
                 }
             });
-        });
-    
-        function updateTable(response) {
-            if (response.success) {
-                var tableBody = '';
-                // Iterate over each record and construct table rows
-                response.records.forEach(function(record) {
-                    tableBody += '<tr>';
-                    tableBody += '<td>' + record.employee_id + '</td>';
-                    tableBody += '<td>' + record.date + '</td>';
-                    tableBody += '<td>' + record.clock_in + '</td>';
-                    tableBody += '<td>' + (record.clock_out ? record.clock_out : 'None') + '</td>';
-                    tableBody += '</tr>';
-                });
-                // Update the table body with the constructed rows
-                $('#attendance-table tbody').html(tableBody);
-            }
         }
-    
-        
+
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -150,8 +202,6 @@
             return cookieValue;
         }
     });
-    
 </script>
-
 
 {% endblock %}

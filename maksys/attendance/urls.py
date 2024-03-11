@@ -5,6 +5,7 @@ from .views import (
     MarkAttendanceView,
     AttendanceSettingsView,
     AttendanceSettingsEditView,
+    GetAttendanceDataView,
 )
 app_name = 'attendance'
 urlpatterns = [
@@ -13,5 +14,6 @@ urlpatterns = [
     path('mark-attendance/', MarkAttendanceView.as_view(), name='mark_attendance'),
     path('attendance_settings/', AttendanceSettingsView.as_view(), name='attendance_settings'),
     path('attendance_settings/edit/', AttendanceSettingsEditView.as_view(), name='attendance_settings_edit'),
+    path('get-attendance-data/', GetAttendanceDataView.as_view(), name='get_attendance_data'),
 ]
 

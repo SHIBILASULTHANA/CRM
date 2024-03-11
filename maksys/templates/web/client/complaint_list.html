@@ -1,0 +1,49 @@
+{% extends "web/base.html" %}
+{% load static %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title"> Complaints</h4>
+                        <!-- Add New Employee Button -->
+                        <a href="{% url 'complaint:complaint_register' %}" class="btn btn-success d-flex align-items-center">+ Add Complaint</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Complaint ID</th>
+                                    <th>Complaint Name</th>
+                                    <th>Start Date</th>
+                                    <th>Category</th>
+                                    <th>Brand</th>
+                                    <th>Serial No.</th>
+                                    <th>Client</th>
+                                    <th>Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for complaint in complaints %}
+                                    <tr>
+                                        <td>{{ complaint.complaint_id }}</td>
+                                        <td>{{ complaint.complaint_name }}</td>
+                                        <td>{{ complaint.start_date }}</td>
+                                        <td>{{ complaint.category}}</td>
+                                        <td>{{ complaint.brand }}</td>
+                                        <td>{{ complaint.serial_no }}</td>
+                                        <td>{{ complaint.client }}</td>
+                                        <td>{{ complaint.summary }}</td>                                       
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
